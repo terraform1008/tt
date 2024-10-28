@@ -7,3 +7,8 @@ terraform {
     }
   }
 }
+
+resource "azurerm_resource_group" "terra_grp" {
+  name     = "terra-rg"
+  location = "West Europe"
+}
