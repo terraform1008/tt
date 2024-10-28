@@ -7,8 +7,3 @@ terraform {
     }
   }
 }
-
-resource "azurerm_resource_group" "tfdemo" {
-  name     = "terragit"
-  location = "West Europe"
-}
