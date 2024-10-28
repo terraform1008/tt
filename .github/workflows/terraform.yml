@@ -42,7 +42,7 @@ jobs:
       run: terraform init
       working-working-directory: ${{env.ROOT_PATH}}
     
-          # Generates an execution plan for Terraform
+    # Generates an execution plan for Terraform
     - name: Terraform Plan
       run: terraform plan
-      working-working-directory: ${{env.ROOT_PATH}}
+      
