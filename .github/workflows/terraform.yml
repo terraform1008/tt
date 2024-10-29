@@ -21,7 +21,7 @@ env:
   ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
 defaults:
   run:
-     working-directory: /home/runner/work/tt/tt
+     working-directory: ./tt/terraform
 
 jobs:
   terraform-plan:
