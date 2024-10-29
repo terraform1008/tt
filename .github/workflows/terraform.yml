@@ -1,47 +1,51 @@
-name: 'TF Deploy to Azure'
+name: 'Terraform Plan/Apply'
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+    - main
   pull_request:
+    branches:
+    - main
 
+#Special permissions required for OIDC authentication
 permissions:
-  contents: write
+  id-token: write
+  contents: read
+  pull-requests: write
 
+#These environment variables are used by the terraform azure provider to setup OIDD authenticate. 
 env:
-  ARM_CLIENT_ID: ${{secrets.Azure_Client_ID}}
-  ARM_CLIENT_SECRET: ${{secrets.AZURE_CLIENT_SECRET}}
-  ARM_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
-  ARM_SUBSCRIPTION_ID: ${{secrets.AZURE_SUBSCRIPTION_ID}}
-  ROOT_PATH: '${{github.workspace}}/terraform'
+  ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+  ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+  ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
 
 jobs:
-  terraform:
+  terraform-plan:
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    environment: production
-
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-    defaults:
-      run:
-        shell: bash
+    env:
+      #this is needed since we are running terraform with read-only permissions
+      ARM_SKIP_PROVIDER_REGISTRATION: true
+    outputs:
+      tfplanExitCode: ${{ steps.tf-plan.outputs.exitcode }}
 
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    # Install the latest version of the Terraform CLI
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v3
       with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_wrapper: false
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: terraform init
-          
-    # Generates an execution plan for Terraform
-    - name: Terraform Plan
-      run: terraform plan
-      
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    # Will fail the build if not
+    - name: Terraform Format
+      run: terraform fmt -check
